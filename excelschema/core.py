@@ -10,23 +10,17 @@ class SchemaParser:
     constraint_mapping = ConstraintMapping()
     records = list()
 
-    def __init__(self, records=None, array=None, as_datetime_str=False, schema=None):
+    def __init__(self, records=None, as_datetime_str=False, schema=None):
         self.as_datetime_str = as_datetime_str
 
-        if records and array:
-            raise ValueError('Please specify either records or array, not both.')
-
-        if array:
-            records = list()
-            header = array[0]
-            for row in array[1:]:
-                records.append(OrderedDict(zip(header, row)))
-
         if records:
-            pass
+            if isinstance(records[0], (list, tuple)):
+                new_records = list()
+                header = records[0]
+                for row in records[1:]:
+                    new_records.append(OrderedDict(zip(header, row)))
 
-        if not array and not records:
-            records = dict()
+                records = new_records
 
         if schema:
             self.constraint_mapping.update(schema)
@@ -68,14 +62,24 @@ class SchemaParser:
         """Sanitizes records, e.g. from Excel spreadsheet
 
         Arguments:
-            records {iterable} -- Iterable of records
+            records {list, tuple} -- Iterable of records. Can be a 2-D array of list of dictionaries
 
         Returns:
             list -- List of records
         """
 
         def _records():
+            nonlocal records
+
+            header = None
+            if isinstance(records[0], (list, tuple)):
+                header = records[0]
+                records = records[1:]
+
             for record_ in records:
+                if isinstance(record_, (list, tuple)):
+                    record_ = dict(zip(header, record_))
+
                 record_schema = parse_record(record_, yield_='type')
                 num_to_str = set()
                 for k, v in record_schema.items():
