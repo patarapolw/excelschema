@@ -1,0 +1,11 @@
+[tool.poetry]
+name = "excelschema"
+version = "0.1.0"
+description = "Excel records' parser and schema viewing and validating tools."
+authors = ["patarapolw <patarapolw@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "*"
+python-dateutil = "^2.7"
+
+[tool.poetry.dev-dependencies]
