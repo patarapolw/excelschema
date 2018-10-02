@@ -6,6 +6,12 @@ class Constraint(NamedTuple):
     unique: bool = False
     not_null: bool = False
 
+    def __repr__(self):
+        if not self.unique and not self.not_null:
+            return repr(self.type_)
+        else:
+            return super(Constraint, self).__repr__()
+
 
 class ConstraintMapping:
     def __init__(self):

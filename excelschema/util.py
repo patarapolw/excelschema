@@ -7,15 +7,11 @@ def normalize_chars(s):
     return unicodedata.normalize("NFKD", s)
 
 
-def jsonify(d):
-    for k, v in d.items():
-        if isinstance(v, datetime):
-            yield k, v.isoformat()
-        else:
-            yield k, v
-
-
 def parse_record(record, yield_='type',  as_datetime_str=False):
+    return dict(_parse_record(record, yield_, as_datetime_str))
+
+
+def _parse_record(record, yield_='type',  as_datetime_str=False):
     def _yield_switch(x):
         if yield_ == 'type':
             return type(x)

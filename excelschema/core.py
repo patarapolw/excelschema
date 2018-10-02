@@ -11,6 +11,8 @@ class SchemaParser:
     records = list()
 
     def __init__(self, records=None, array=None, as_datetime_str=False, schema=None):
+        self.as_datetime_str = as_datetime_str
+
         if records and array:
             raise ValueError('Please specify either records or array, not both.')
 
@@ -30,7 +32,6 @@ class SchemaParser:
             self.constraint_mapping.update(schema)
 
         self.records = self.ensure_multiple(records)
-        self.as_datetime_str = as_datetime_str
 
     @property
     def schema(self):
@@ -63,7 +64,7 @@ class SchemaParser:
         self.constraint_mapping.update(schema_dict)
         self.ensure_multiple(self.records)
 
-    def ensure_multiple(self, records, update_schema=True):
+    def ensure_multiple(self, records, update_schema=False):
         """Sanitizes records, e.g. from Excel spreadsheet
 
         Arguments:
@@ -75,7 +76,7 @@ class SchemaParser:
 
         def _records():
             for record_ in records:
-                record_schema = dict(parse_record(record_, yield_='type'))
+                record_schema = parse_record(record_, yield_='type')
                 num_to_str = set()
                 for k, v in record_schema.items():
                     expected_type = self.constraint_mapping.type_.get(k, None)
@@ -87,8 +88,8 @@ class SchemaParser:
                                                           .format(v, self.schema))
                     self.constraint_mapping.update(schema_dict=record_schema)
 
-                record_ = dict(parse_record(record_, yield_='record',
-                                            as_datetime_str=self.as_datetime_str))
+                record_ = parse_record(record_, yield_='record',
+                                       as_datetime_str=self.as_datetime_str)
                 for k, v in record_.items():
                     if k in num_to_str:
                         record_[k] = str(v)
@@ -118,11 +119,11 @@ class SchemaParser:
 
         return records
 
-    def ensure_one(self, record, update_schema=True):
+    def ensure_one(self, record, update_schema=False):
         return self.ensure_multiple([record], update_schema=update_schema)[0]
 
     def _update_uniqueness(self, record_dict):
-        for k, v in parse_record(record_dict, yield_='type'):
+        for k, v in parse_record(record_dict, yield_='type').items():
             if k in self.constraint_mapping.preexisting.keys():
                 if v in self.constraint_mapping.preexisting[k]:
                     raise NotUniqueException('Duplicate {} for {} exists'.format(v, k))
