@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "excelschema"
-version = "0.1.2"
+version = "0.1.2.4"
 description = "Excel records' parser and schema viewing and validating tools."
 authors = ["patarapolw <patarapolw@gmail.com>"]
 readme = "README.md"

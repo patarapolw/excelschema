@@ -1,6 +1,8 @@
 import unicodedata
 from datetime import datetime, date
 import dateutil.parser
+from collections import OrderedDict
+import itertools
 
 
 def normalize_chars(s):
@@ -43,3 +45,25 @@ def _parse_record(record, yield_='type',  as_datetime_str=False):
             v = datetime.combine(v, datetime.min.time())
 
         yield k, _yield_switch(v)
+
+
+def parse_excel_array(records=None, array=None, header=True):
+    if records and array:
+        raise ValueError('Please specify either record or array')
+
+    if array:
+        if header:
+            if not isinstance(header, (list, tuple)):
+                header = array[0]
+                array = array[1:]
+        else:
+            header = itertools.count()
+
+        records = list()
+        for row in array:
+            records.append(OrderedDict(zip(header, row)))
+
+            if isinstance(header, itertools.count):
+                header = itertools.count()
+
+    return records

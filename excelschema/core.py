@@ -1,31 +1,22 @@
-from collections import OrderedDict
 from copy import deepcopy
 
 from .constraint import ConstraintMapping
 from .exception import NotUniqueException, NotNullException, NonUniformTypeException
-from .util import parse_record
+from .util import parse_record, parse_excel_array
 
 
 class SchemaParser:
     constraint_mapping = ConstraintMapping()
     records = list()
 
-    def __init__(self, records=None, as_datetime_str=False, schema=None):
+    def __init__(self, records=None, array=None, header=True, as_datetime_str=False, schema=None):
         self.as_datetime_str = as_datetime_str
-
-        if records:
-            if isinstance(records[0], (list, tuple)):
-                new_records = list()
-                header = records[0]
-                for row in records[1:]:
-                    new_records.append(OrderedDict(zip(header, row)))
-
-                records = new_records
 
         if schema:
             self.constraint_mapping.update(schema)
 
-        self.records = self.ensure_multiple(records)
+        if records and array:
+            self.records = self.ensure_multiple(records=records, array=array, header=header)
 
     @property
     def schema(self):
@@ -58,7 +49,7 @@ class SchemaParser:
         self.constraint_mapping.update(schema_dict)
         self.ensure_multiple(self.records)
 
-    def ensure_multiple(self, records, update_schema=False):
+    def ensure_multiple(self, records=None, update_schema=False, array=None, header=None):
         """Sanitizes records, e.g. from Excel spreadsheet
 
         Arguments:
@@ -71,15 +62,8 @@ class SchemaParser:
         def _records():
             nonlocal records
 
-            header = None
-            if isinstance(records[0], (list, tuple)):
-                header = records[0]
-                records = records[1:]
-
+            records = parse_excel_array(records=records, array=array, header=header)
             for record_ in records:
-                if isinstance(record_, (list, tuple)):
-                    record_ = dict(zip(header, record_))
-
                 record_schema = parse_record(record_, yield_='type')
                 num_to_str = set()
                 for k, v in record_schema.items():
@@ -117,7 +101,7 @@ class SchemaParser:
 
         if not update_schema:
             self.constraint_mapping = ConstraintMapping()
-            self.constraint_mapping.update(temp_mapping)
+            self.constraint_mapping.update(temp_mapping.view())
         else:
             self.records.extend(records)
 
