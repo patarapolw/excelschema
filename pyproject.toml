@@ -3,6 +3,10 @@ name = "excelschema"
 version = "0.1.0"
 description = "Excel records' parser and schema viewing and validating tools."
 authors = ["patarapolw <patarapolw@gmail.com>"]
+readme = "README.md"
+repository = "https://github.com/patarapolw/excelschema"
+homepage = "https://github.com/patarapolw/excelschema"
+keywords = ["excel"]
 
 [tool.poetry.dependencies]
 python = "*"
